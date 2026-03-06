@@ -71,20 +71,39 @@ async function processImages() {
     recognizedAmounts = [];
     
     try {
-        // 创建 Tesseract worker
+        loadingText.textContent = '正在初始化识别引擎...';
+        progressText.textContent = '可能需要 10-30 秒（首次加载语言包）';
+        
+        // 创建 Tesseract worker，设置超时
         const worker = await Tesseract.createWorker({
             logger: m => {
                 if (m.status === 'recognizing text') {
                     progressText.textContent = `识别进度：${Math.round(m.progress * 100)}%`;
+                } else if (m.status === 'loading tesseract core') {
+                    progressText.textContent = '正在加载识别引擎...';
+                } else if (m.status === 'initializing api') {
+                    progressText.textContent = '正在初始化...';
                 } else {
                     progressText.textContent = m.status;
                 }
+            },
+            errorHandler: err => {
+                console.error('Tesseract 错误:', err);
             }
         });
         
-        // 加载中文语言包
-        await worker.loadLanguage('chi_sim');
-        await worker.initialize('chi_sim');
+        // 加载中文语言包（带超时）
+        loadingText.textContent = '正在加载中文识别包...';
+        try {
+            await worker.loadLanguage('chi_sim');
+            await worker.initialize('chi_sim');
+            loadingText.textContent = '中文包加载成功，开始识别...';
+        } catch (langError) {
+            console.warn('中文包加载失败，尝试英文包:', langError);
+            loadingText.textContent = '中文包加载慢，尝试通用识别...';
+            // 降级方案：不加载语言包，直接识别
+            await worker.initialize('eng');
+        }
         
         // 逐张识别图片
         for (let i = 0; i < selectedImages.length; i++) {
@@ -92,6 +111,7 @@ async function processImages() {
             loadingText.textContent = `正在识别第 ${i + 1}/${selectedImages.length} 张图片...`;
             
             const result = await worker.recognize(file);
+            console.log(`图片 ${i + 1} 识别结果:`, result.data.text);
             const amounts = extractAmounts(result.data.text, file.name);
             recognizedAmounts.push(...amounts);
         }
@@ -103,7 +123,7 @@ async function processImages() {
         
     } catch (error) {
         console.error('识别失败:', error);
-        showError(`识别失败：${error.message}`);
+        showError(`识别失败：${error.message || '未知错误'}`);
     }
 }
 

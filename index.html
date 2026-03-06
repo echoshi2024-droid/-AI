@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>买菜记账</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>🥬 买菜记账</h1>
+        <p class="subtitle">上传微信转账截图，自动统计金额</p>
+        
+        <div class="upload-section">
+            <label for="imageInput" class="upload-btn">
+                📷 选择图片
+            </label>
+            <input type="file" id="imageInput" accept="image/*" multiple style="display: none;">
+            <p class="hint">支持多选，可一次上传多张截图</p>
+        </div>
+        
+        <div id="previewSection" class="preview-section"></div>
+        
+        <div id="processSection" class="process-section" style="display: none;">
+            <button id="processBtn" class="process-btn">🔍 开始识别</button>
+        </div>
+        
+        <div id="loadingSection" class="loading-section" style="display: none;">
+            <div class="spinner"></div>
+            <p id="loadingText">正在识别图片...</p>
+            <p id="progressText" class="progress-text"></p>
+        </div>
+        
+        <div id="resultSection" class="result-section" style="display: none;">
+            <h2>📊 识别结果</h2>
+            <div id="amountList" class="amount-list"></div>
+            <div class="total-section">
+                <span>💰 总计：</span>
+                <span id="totalAmount" class="total-amount">¥0.00</span>
+            </div>
+            <button id="resetBtn" class="reset-btn">🔄 重新上传</button>
+        </div>
+        
+        <div id="errorSection" class="error-section" style="display: none;">
+            <p id="errorText"></p>
+            <button id="retryBtn" class="retry-btn">重试</button>
+        </div>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
